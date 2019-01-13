@@ -1,4 +1,4 @@
-#lang at-exp racket
+#lang at-exp racket/base
 
 (module+ test
   (require rackunit))
@@ -24,29 +24,42 @@
 ;; See the current version of the racket style guide here:
 ;; http://docs.racket-lang.org/style/index.html
 
+;;
+;My design is; 
+;
+;GET http(s)://server/<filename in #:server-root-path> 
+;-> serve static file at specified path
+;GET http(s)://server/<filename in #:server-root-path>?action=edit 
+;-> serve edit page servlet that retrieves scribble source
+;GET http(s)://server/<filename not found in #:server-root-path> 
+;-> serve edit page adding parameters ?action=edit or maybe new
+;POST http(s)://server/<filename in #:server-root-path>   
+;-> update scribble source file,  generate target html file in #:server-root-path and redirect to target html file at http(s)://server/<filename in #:server-root-path>
+
+;; TODO
+; 
+; 1. users
+;  - authentication mechanism?
+;  - user accounts (need a database!)
+;  - sessions (cookies? JWT's?)
+; 2. git for versioning
+;  - commit & Sync on save
+;  - page history
+;  - perhaps #lang scribble/wiki
+
 ;; Code here
 
 (require web-server/servlet
          web-server/servlet-env
-         web-server/dispatch
-         racket/format)
+         racket/contract
+         racket/list
+         racket/string)
 
 (require web-server/servlet
          web-server/dispatchers/dispatch
          "private/scribble-to-html.rkt")
 
 (provide/contract (start (request? . -> . response?)))
-
-;(require raco/all-tools)
-;;;scribble-to-html : source target body
-;;; generate html file from scribble file
-;(define (scribble-to-html source target)
-;  (define raco-scribble-spec (hash-ref (all-tools) "scribble"))  
-;  (parameterize
-;      ([current-namespace (make-base-namespace)]
-;       [current-command-line-arguments (vector "--html" (path->string source))]
-;       [current-directory target])
-;    (dynamic-require (cadr raco-scribble-spec) #f)))
 
 ;; get the filename from a request
 (define (req->filename req) (path/param-path (last (url-path (request-uri req)))))
@@ -77,7 +90,6 @@
 ; where title is a string, and body is a string
 (struct post (title body))
   
-
 (define (start request)
   (render-edit-page request))
  
@@ -92,7 +104,7 @@
 (define (render-edit-page req)
   
   ;; show the edit page
-  (define (response-generator embed/url)
+  (define (edit-page-generator embed/url)
     (define scribbletitle (string-trim (req->filename req) ".html"))
     (define scribblebody (read-scribble scribbletitle scribble-root))
     (response/xexpr
@@ -107,26 +119,42 @@
                ((name "body") (wrap "hard") (rows "35") (cols "80"))
                ,scribblebody)
               (button ((type "submit")) "save" ))))))
+
+
+    ;; show the edit page
+  (define (new-page-generator embed/url)
+    (define scribbletitle (string-trim (req->filename req) ".html"))
+    (response/xexpr
+     `(html
+       (head (title "page Details"))
+       (body
+        (h1 "Editor")
+        (form ((action ,(embed/url save-handler)))
+              "Title:" (input ((name "title")(value ,scribbletitle)))
+              (br) "text:" (br)
+              (textarea
+               ((name "body") (wrap "hard") (rows "35") (cols "80"))
+               "#lang scribble/base")
+              (button ((type "submit")) "save" ))))))
   
   (define (save-handler req)
     (define a-post (parse-post (request-bindings req)))
-    (define scrbl-file (name->scrbl-filename scribble-root (post-title a-post))
-      ; (name->scrbl-filename scribble-root (string-trim (req->filename req) ".html"))
-      )
-    ;(printf "saving [~a]....~n" scrbl-file)
+    (define scrbl-file (name->scrbl-filename scribble-root (post-title a-post)))
     (call-with-output-file scrbl-file
       #:mode 'text #:exists 'replace
       (lambda (out) (display (post-body a-post) out)))
-    ;(display (post-body a-post))
     (scribble-to-html scrbl-file page-root)
     (redirect-to (string-append "/" (post-title a-post) ".html" )))
 
   (define query (url-query (request-uri req)))
+  (define filename (req->filename req))
   ;(displayln query)
   (cond
     [(and (not (empty? query)) (equal? (caar query) 'action) (equal? (cdar query) "edit"))
-     (send/suspend/dispatch response-generator)]
-    [(not (file-exists? (build-path page-root (req->filename req)))) (next-dispatcher)] ; temp
+     (send/suspend/dispatch edit-page-generator)]
+    [(and (regexp-match @regexp{.*\.html$} filename) ; only .html
+      (not (file-exists? (build-path page-root filename))))
+     (send/suspend/dispatch new-page-generator)]
     [else (next-dispatcher)]))
 
 
@@ -143,9 +171,6 @@ ask for a glass of milk.")
   (write-scribble "main" testscribble scribble-root)
   (write-scribble "home" testscribble scribble-root)
 
-  (check-equal? (+ 2 2) 4)
-
-
   )
 
 (module+ main
@@ -154,14 +179,13 @@ ask for a glass of milk.")
   ;; does not run when this file is required by another module. Documentation:
   ;; http://docs.racket-lang.org/guide/Module_Syntax.html#%28part._main-and-test%29
 
-(serve/servlet render-edit-page
-               #:launch-browser? #t
-               #:quit? #f
-               #:listen-ip #f
-               #:port 80
-               #:servlet-regexp #rx"" ; #rx".*?action=edit$"
-               ;#:server-root-path page-root
-               #:extra-files-paths (list page-root)
-               #:servlet-path "/mouse.html?action=edit")
+  (serve/servlet render-edit-page
+                 #:launch-browser? #t
+                 #:quit? #f
+                 #:listen-ip #f
+                 #:port 80
+                 #:servlet-regexp #rx""
+                 #:extra-files-paths (list page-root)
+                 #:servlet-path "/mouse.html") ;"/mouse.html?action=edit")
 
   )
