@@ -33,7 +33,7 @@ the Scribble source and the generated html are in separate folders,
 * history, scribble-diff, rollback
 * An editor(in RacketScript), to provide a better UX than a form textbox 
 * editing from DrRacket
-* pollen instead of scribble (pollen allows undefined identifiers - which scribble doesn't - which woudl be useful in creating new pages in a wiki-like fashion)
+* pollen instead of scribble (pollen allows undefined identifiers - which scribble doesn't - which would be useful in creating new pages in a wiki-like fashion) pollen blog: <https://github.com/otherjoel/thenotepad> may be relevant
 
 ### resources
 
