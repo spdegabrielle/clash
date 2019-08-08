@@ -39,12 +39,14 @@ the Scribble source and the generated html are in separate folders,
 * I'm trying to make it with plain old <form>s hence the use of POST (or can I use PUT or invent a verb in modern browsers?)  
 
 ### ToDO  
-* users/authentication (openID?)
-* git for versions (of the scribble files)
-* history, scribble-diff, rollback
-* An editor(in RacketScript), to provide a better UX than a form textbox 
-* editing from DrRacket
-* pollen instead of scribble (pollen allows undefined identifiers - which scribble doesn't - which would be useful in creating new pages in a wiki-like fashion) pollen blog: <https://github.com/otherjoel/thenotepad> may be relevant
+- [X] convert scribble to html
+- [ ] users/authentication (openID?)
+- [ ] git for versions (of the scribble files)
+- [ ] history, scribble-diff, rollback
+- [ ] An editor(in RacketScript), to provide a better UX than a form textbox 
+- [ ] editing from DrRacket
+- [ ] pollen instead of scribble (pollen allows undefined identifiers - which scribble doesn't - which would be useful in creating new pages in a wiki-like fashion) pollen blog: <https://github.com/otherjoel/thenotepad> may be relevant
+- [ ] what else?
 
 ### resources
 
