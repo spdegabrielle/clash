@@ -1,4 +1,4 @@
-clash - a wiki in racket using scribble.
+Clash - a wiki in racket using scribble.
 =====
 
 > _We plan to replace this wiki (eventually) with a wiki written in Racket, to which we will migrate the existing content._
@@ -12,7 +12,9 @@ A wiki using scribble as the wiki text!
 To replace <https://github.com/racket/racket/wiki>.
 
 
-### design
+### Design
+
+DRAFT - subject to change
 
 GET http(s)://server/filename.html    
  - file exist -> serve static file at specified path 
@@ -25,12 +27,14 @@ POST form to http(s)://server/filename.html
   -> update scribble source file & generate target html file in #:server-root-path and redirect to target html file at http(s)://server/filename.html  
 
 the Scribble source and the generated html are in separate folders, 
+
 ````
 ;; folder to store html static files
 (define page-root (build-path (current-directory) "html"))
 ;; folder to store scribble source (or other source format)
 (define scribble-root (build-path (current-directory) "scribble"))
 ````
+
 * filename.html is in  `#:extra-files-paths` aka `page-root`
 * I'm trying to make it with plain old <form>s hence the use of POST (or can I use PUT or invent a verb in modern browsers?)  
 
