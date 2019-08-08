@@ -1,8 +1,15 @@
 clash - a wiki in racket using scribble.
 =====
 
-I'm trying to build a very basic wiki using scribble as the wiki text! 
-(to replace https://github.com/racket/racket/wiki)
+> _We plan to replace this wiki (eventually) with a wiki written in Racket, to which we will migrate the existing content._
+
+(footer of the racket wiki on GitHub at <https://github.com/racket/racket/wiki>) 
+
+## Goal 
+A wiki using scribble as the wiki text! 
+
+## Purpose 
+To replace <https://github.com/racket/racket/wiki>.
 
 
 ### design
