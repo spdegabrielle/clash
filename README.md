@@ -18,7 +18,10 @@ DRAFT - subject to change
 
 GET http(s)://server/filename.html    
  - file exist -> serve static file at specified path 
- - file missing -> edit form to create new page  
+ - file missing -> Redirect if applicable, otherwise start Edit flow
+
+Edit flow
+ edit form to create new page  
 GET http(s)://server/filename.html?action=edit  
   -> serve edit page servlet that retrieves scribble source and puts it in a form
 GET http(s)://server/filename <filename not found in #:server-root-path>  
@@ -46,6 +49,7 @@ the Scribble source and the generated html are in separate folders,
 - [ ] An editor(in RacketScript), to provide a better UX than a form textbox 
 - [ ] editing from DrRacket
 - [ ] pollen instead of scribble (pollen allows undefined identifiers - which scribble doesn't - which would be useful in creating new pages in a wiki-like fashion) pollen blog: <https://github.com/otherjoel/thenotepad> may be relevant
+- [ ] support redirects
 - [ ] what else?
 
 ### resources
